@@ -1,30 +1,51 @@
-// Import necessary components and functions from react-router-dom.
-
 import {
-    createBrowserRouter,
-    createRoutesFromElements,
-    Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  Navigate,
 } from "react-router-dom";
-import { Layout } from "./pages/Layout";
-import { Home } from "./pages/Home";
-import { Single } from "./pages/Single";
-import { Demo } from "./pages/Demo";
+import { Layout } from "./pages/Layout.jsx";
+import { Home } from "./pages/Home.jsx";
+import { Single } from "./pages/Single.jsx";
+import { Demo } from "./pages/Demo.jsx";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import Private from "./pages/Private.jsx";
+
+function Protected({ children }) {
+  const has = typeof window !== "undefined" && sessionStorage.getItem("token");
+  return has ? children : <Navigate to="/login" replace />;
+}
 
 export const router = createBrowserRouter(
-    createRoutesFromElements(
-    // CreateRoutesFromElements function allows you to build route elements declaratively.
-    // Create your routes here, if you want to keep the Navbar and Footer in all views, add your new routes inside the containing Route.
-    // Root, on the contrary, create a sister Route, if you have doubts, try it!
-    // Note: keep in mind that errorElement will be the default page when you don't get a route, customize that page to make your project more attractive.
-    // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
+  createRoutesFromElements(
+    <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
+      <Route
+        index
+        element={
+          sessionStorage.getItem("token") ? (
+            <Navigate to="/private" replace />
+          ) : (
+            <Navigate to="/signup" replace />
+          )
+        }
+      />
+      <Route path="single/:theId" element={<Single />} />
+      <Route path="demo" element={<Demo />} />
 
-      // Root Route: All navigation will start from here.
-      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
+      <Route path="signup" element={<Signup />} />
+      <Route path="login" element={<Login />} />
+      <Route
+        path="private"
+        element={
+          <Protected>
+            <Private />
+          </Protected>
+        }
+      />
 
-        {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-        <Route path= "/" element={<Home />} />
-        <Route path="/single/:theId" element={ <Single />} />  {/* Dynamic route for single items */}
-        <Route path="/demo" element={<Demo />} />
-      </Route>
-    )
+      {/* fallback catch-all */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Route>
+  )
 );
